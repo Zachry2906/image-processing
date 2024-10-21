@@ -19,15 +19,15 @@ def display_histogram(img):
     st.pyplot(fig)
 
 # App title and description
-st.title("✨ Enhanced Mini Lightroom")
-st.markdown("Transform your images with our powerful and easy-to-use photo editing tool!")
+st.set_page_config(page_title="Aplikasi Pengolahan Citra")
+st.title("✨ Aplikasi Pengolahan Citra")
+st.markdown("Ubah gambar Anda dengan berbagai fitur pengolahan gambar yang disediakan oleh aplikasi ini. 🎨")
 
 # Sidebar styling
-st.sidebar.markdown("## 🛠️ Features")
-st.sidebar.markdown("Customize your image with our advanced tools.")
+st.sidebar.markdown("## 🛠️ Pengolahan citra")
 
 # Tabs for different input types with icons
-tab1, tab2 = st.tabs(["📤 Upload Image", "📷 Use Camera"])
+tab1, tab2 = st.tabs(["📤 Unggah Gambar", "📷 Gunakan Kamera"])
 
 with tab1:
     upload_image = st.file_uploader("", type=["jpg", "png", "jpeg", "bmp"])
@@ -37,32 +37,29 @@ with tab1:
         img = cv.imdecode(file_bytes, 1)
         img2 = cv.imdecode(file_bytes, 0)  # Read as grayscale
 
-        menu = st.sidebar.selectbox("Select Image Processing Feature", 
+        menu = st.sidebar.selectbox("Pilih Fitur Pengolahan Gambar", 
         ["Grayscale", "Binary", "Negative", "Edge Detection", "Smoothing", "Brightness", "Equalization", "Rotate", "Flip" , "Contrast", "Sharpness"])
 
         col1, col2 = st.columns(2)
 
         with col1:
-            st.markdown("### 📸 Original Image")
+            st.markdown("### 📸 Gambar Asli")
             st.image(cv.cvtColor(img, cv.COLOR_BGR2RGB), use_column_width=True)
-            with st.expander("📊 Show Original Histogram"):
-                display_histogram(cv.cvtColor(img, cv.COLOR_BGR2GRAY))
+            display_histogram(cv.cvtColor(img, cv.COLOR_BGR2GRAY))
 
         with col2:
-            st.markdown("### 🎨 Edited Image")
+            st.markdown("### 🎨 Gambar sudah diedit")
 
             if menu == 'Grayscale':
                 img_gray = convert_to_gray(img)
                 st.image(img_gray, use_column_width=True)
-                with st.expander("📊 Show Edited Histogram"):
-                    display_histogram(img_gray)
+                display_histogram(img_gray)
 
             elif menu == 'Binary':
                 threshold = st.sidebar.slider("Threshold", value=128, min_value=0, max_value=255)
                 img_binary = convert_to_binary(img2, threshold)
                 st.image(img_binary, use_column_width=True)
-                with st.expander("📊 Show Edited Histogram"):
-                    display_histogram(img_binary)
+                display_histogram(img_binary)
 
             elif menu == 'Negative':
                 img_negative = convert_to_negative(img)
@@ -119,10 +116,10 @@ with tab1:
                 display_histogram(cv.cvtColor(img_sharpness, cv.COLOR_BGR2GRAY))
 
     else:
-        st.warning("👆 Please upload an image to start editing.")
+        st.warning("Silahkan upload gambar terlebih dahulu.")
 
 with tab2:
-    menu = st.sidebar.selectbox("Select Image Processing Feature", 
+    menu = st.sidebar.selectbox("Pilih Fitur Pengolahan Gambar Pada Kamera", 
     ["Grayscale", "Binary", "Negative", "Edge Detection", "Smoothing", "Brightness", "Equalization", "Flip", "Contrast", "Sharpness"])
 
     # Add a start camera button
@@ -139,10 +136,10 @@ with tab2:
             # Create placeholders for the video feeds
             col1, col2 = st.columns(2)
             with col1:
-                st.markdown("### 📹 Original Feed")
+                st.markdown("### 📹 Gambar Asli")
                 original_placeholder = st.empty()
             with col2:
-                st.markdown("### 🖼️ Processed Feed")
+                st.markdown("### 🖼️ Gambar sudah diolah")
                 processed_placeholder = st.empty()
 
             # Add a stop button with improved styling
@@ -206,7 +203,7 @@ with tab2:
             # Release the camera
             cap.release()
     else:
-        st.info("👆 Click the 'Start Camera' button to begin using your camera.")
+        st.info("Klik tombol 'Start Camera' untuk memulai kamera.")
 
 # Footer with improved styling
 st.markdown("---")
