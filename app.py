@@ -19,7 +19,7 @@ def display_histogram(img):
     st.pyplot(fig)
 
 # App title and description
-st.set_page_config(page_title="Aplikasi Pengolahan Citra")
+st.set_page_config(page_title="Aplikasi Pengolahan Citra 1")
 st.title("✨ Aplikasi Pengolahan Citra")
 st.markdown("Ubah gambar Anda dengan berbagai fitur pengolahan gambar yang disediakan oleh aplikasi ini. 🎨")
 
