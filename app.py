@@ -29,25 +29,6 @@ st.sidebar.markdown("## 🛠️ Pengolahan citra")
 # Tabs for different input types with icons
 tab1, tab2 = st.tabs(["📤 Unggah Gambar", "📷 Gunakan Kamera"])
 
-menu = st.sidebar.selectbox("Pilih Fitur Pengolahan Gambar", 
-    ["Grayscale", "Binary", "Negative", "Edge Detection", "Smoothing", "Brightness", "Equalization", "Rotate", "Flip" , "Contrast", "Sharpness"])
-
-if menu == 'Binary':
-    threshold = st.sidebar.slider("Threshold", value=128, min_value=0, max_value=255)
-elif menu == 'Edge Detection':
-    method = st.sidebar.radio("Pilih Metode Konvolusi", ["Canny", "Sobel", "Robert", "Prewit"])
-elif menu == 'Smoothing':
-    factor = st.sidebar.slider("Factor", value=5, min_value=1, max_value=19, step=2)
-elif menu == 'Brightness':
-    factor = st.sidebar.slider("Brightness Factor", value=1.0, min_value=0.1, max_value=3.0, step=0.1)
-elif menu == "Flip":
-    arrow = st.sidebar.radio("Pilih Arah Flip", ["Horizontal", "Vertical", "Both"])
-elif menu == "Contrast":
-    factor = st.sidebar.slider('Factor', min_value=0.1, max_value=3.0, value=1.0, step=0.1)
-elif menu == "Sharpness":
-    factor = st.sidebar.slider('Factor', min_value=0.1, max_value=3.0, value=1.0, step=0.1)
-
-
 with tab1:
     upload_image = st.file_uploader("", type=["jpg", "png", "jpeg", "bmp"])
 
@@ -55,6 +36,9 @@ with tab1:
         file_bytes = np.asarray(bytearray(upload_image.read()), dtype=np.uint8)
         img = cv.imdecode(file_bytes, 1)
         img2 = cv.imdecode(file_bytes, 0)  # Read as grayscale
+
+        menu = st.sidebar.selectbox("Pilih Fitur Pengolahan Gambar", 
+        ["Grayscale", "Binary", "Negative", "Edge Detection", "Smoothing", "Brightness", "Equalization", "Rotate", "Flip" , "Contrast", "Sharpness"])
 
         col1, col2 = st.columns(2)
 
@@ -72,6 +56,7 @@ with tab1:
                 display_histogram(img_gray)
 
             elif menu == 'Binary':
+                threshold = st.sidebar.slider("Threshold", value=128, min_value=0, max_value=255)
                 img_binary = convert_to_binary(img2, threshold)
                 st.image(img_binary, use_column_width=True)
                 display_histogram(img_binary)
@@ -82,6 +67,7 @@ with tab1:
                 display_histogram(cv.cvtColor(img_negative, cv.COLOR_BGR2GRAY))
 
             elif menu == 'Edge Detection':
+                method = st.sidebar.radio("Pilih Metode Konvolusi", ["Canny", "Sobel", "Robert", "Prewit"])
                 img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
                 img_gaussian = cv.GaussianBlur(img_gray, (3,3), 0)
                 img_edge = detect_edge(img_gaussian, method)
@@ -89,11 +75,13 @@ with tab1:
                 display_histogram(img_edge)
 
             elif menu == 'Smoothing':
+                factor = st.sidebar.slider("Factor", value=5, min_value=1, max_value=19, step=2)
                 img_smoothing = convert_to_smooth(img, factor)
                 st.image(cv.cvtColor(img_smoothing, cv.COLOR_BGR2RGB), use_column_width=True)
                 display_histogram(cv.cvtColor(img_smoothing, cv.COLOR_BGR2GRAY))
 
             elif menu == 'Brightness':
+                factor = st.sidebar.slider("Brightness Factor", value=1.0, min_value=0.1, max_value=3.0, step=0.1)
                 img_brightness = change_brightness(img, factor)
                 st.image(cv.cvtColor(img_brightness, cv.COLOR_BGR2RGB), use_column_width=True)
                 display_histogram(cv.cvtColor(img_brightness, cv.COLOR_BGR2GRAY))
@@ -104,21 +92,25 @@ with tab1:
                 display_histogram(img_equalize)
 
             elif menu == "Rotate":
+                rotate_degree = st.sidebar.number_input('Input Derajat Rotasi', min_value=0, max_value=360)
                 img_rotate = rotate(img, rotate_degree)
                 st.image(cv.cvtColor(np.array(img_rotate), cv.COLOR_BGR2RGB), use_column_width=True)
                 display_histogram(cv.cvtColor(np.array(img_rotate), cv.COLOR_BGR2GRAY))
 
             elif menu == "Flip":
+                arrow = st.sidebar.radio("Pilih Arah Flip", ["Horizontal", "Vertical", "Both"])
                 img_flip = flip(img, arrow)
                 st.image(cv.cvtColor(np.array(img_flip), cv.COLOR_BGR2RGB), use_column_width=True)
                 display_histogram(cv.cvtColor(np.array(img_flip), cv.COLOR_BGR2GRAY))
             
             elif menu == "Contrast":
+                factor = st.sidebar.slider('Factor', min_value=0.1, max_value=3.0, value=1.0, step=0.1)
                 img_contrast = contrast(img, factor)
                 st.image(cv.cvtColor(img_contrast, cv.COLOR_BGR2RGB), use_column_width=True)
                 display_histogram(cv.cvtColor(img_contrast, cv.COLOR_BGR2GRAY))
             
             elif menu == "Sharpness":
+                factor = st.sidebar.slider('Factor', min_value=0.1, max_value=3.0, value=1.0, step=0.1)
                 img_sharpness = sharpness(img, factor)
                 st.image(cv.cvtColor(img_sharpness, cv.COLOR_BGR2RGB), use_column_width=True)
                 display_histogram(cv.cvtColor(img_sharpness, cv.COLOR_BGR2GRAY))
@@ -127,6 +119,9 @@ with tab1:
         st.warning("Silahkan upload gambar terlebih dahulu.")
 
 with tab2:
+    menu = st.sidebar.selectbox("Pilih Fitur Pengolahan Gambar Pada Kamera", 
+    ["Grayscale", "Binary", "Negative", "Edge Detection", "Smoothing", "Brightness", "Equalization", "Flip", "Contrast", "Sharpness"])
+
     # Add a start camera button
     start_camera = st.button("📷 Start Camera")
 
@@ -165,24 +160,31 @@ with tab2:
                     if menu == 'Grayscale':
                         processed_frame = convert_to_gray(frame)
                     elif menu == 'Binary':
+                        threshold = st.sidebar.slider("Threshold", value=128, min_value=0, max_value=255)
                         processed_frame = convert_to_binary(cv.cvtColor(frame, cv.COLOR_BGR2GRAY), threshold)
                     elif menu == 'Negative':
                         processed_frame = convert_to_negative(frame)
                     elif menu == 'Edge Detection':
+                        method = st.sidebar.radio("Choose Convolution Method", ["Canny", "Sobel", "Robert", "Prewit"])
                         frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
                         frame_gaussian = cv.GaussianBlur(frame_gray, (3,3), 0)
                         processed_frame = detect_edge(frame_gaussian, method)
                     elif menu == 'Smoothing':
+                        factor = st.sidebar.slider("Factor", value=5, min_value=1, max_value=19, step=2)
                         processed_frame = convert_to_smooth(frame, factor)
                     elif menu == 'Brightness':
+                        factor = st.sidebar.slider("Brightness Factor", value=1.0, min_value=0.1, max_value=3.0, step=0.1)
                         processed_frame = change_brightness(frame, factor)
                     elif menu == "Equalization":
                         processed_frame = equalization(cv.cvtColor(frame, cv.COLOR_BGR2GRAY))
                     elif menu == "Flip":
+                        arrow = st.sidebar.radio("Choose Flip Direction", ["Horizontal", "Vertical", "Both"])
                         processed_frame = flip(frame, arrow)
                     elif menu == "Contrast":
+                        factor = st.sidebar.slider('Factor', min_value=0.1, max_value=3.0, value=1.0, step=0.1)
                         processed_frame = contrast(frame, factor)
                     elif menu == "Sharpness":
+                        factor = st.sidebar.slider('Factor', min_value=0.1, max_value=3.0, value=1.0, step=0.1)
                         processed_frame = sharpness(frame, factor)
                     else:
                         processed_frame = frame
