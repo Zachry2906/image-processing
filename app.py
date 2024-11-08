@@ -69,7 +69,7 @@ def process_image(img, menu, params=None):
     return img
 
 
-class VideoTransformer(cv.VideoWriter_fourcc):
+class VideoTransformer:
     def __init__(self, menu, params):
         self.menu = menu
         self.params = params
