@@ -4,7 +4,6 @@ import streamlit as st
 from PIL import Image
 import matplotlib.pyplot as plt
 from io import BytesIO
-from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
 from image_processing import convert_to_gray, convert_to_binary, convert_to_negative, convert_to_smooth, detect_edge, change_brightness, equalization, rotate, flip, contrast, sharpness
 
 # untuk display histogram
@@ -23,7 +22,6 @@ def display_histogram(img):
     fig.patch.set_facecolor('none')
     ax.set_facecolor('none')
     return fig
-
 
 def process_image(img, menu, params=None):
     """Unified function to process both uploaded images and camera frames"""
@@ -67,17 +65,6 @@ def process_image(img, menu, params=None):
     elif menu == "Sharpness":
         return sharpness(img, params.get('factor', 1.0))
     return img
-
-
-class VideoTransformer:
-    def __init__(self, menu, params):
-        self.menu = menu
-        self.params = params
-    
-    def transform(self, frame):
-        img = frame.to_ndarray(format="bgr24")
-        processed_img = process_image(img, self.menu, self.params)
-        return processed_img
 
 def display_image_with_histogram(img, title, column):
     with column:
@@ -160,11 +147,55 @@ with tab1:
         st.warning("Silahkan upload gambar terlebih dahulu.")
 
 with tab2:
-        start_camera = st.button("📷 Start Camera")
-        if start_camera:
-            webrtc_streamer(key="example", video_transformer_factory=lambda: VideoTransformer(menu, params))
+    start_camera = st.button("📷 Start Camera")
+    
+    if start_camera:
+        cap = cv.VideoCapture(0)
+        
+        if not cap.isOpened():
+            st.error("❌ Error: Unable to open camera. Please check your camera connection.")
         else:
-            st.info("Click the 'Start Camera' button to begin.")
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("### 📹 Gambar Asli")
+                original_image = st.empty()
+                original_hist = st.empty()
+            
+            with col2:
+                st.markdown("### 🖼️ Gambar sudah diolah")
+                processed_image = st.empty()
+                processed_hist = st.empty()
+            
+            stop_button = st.button("🛑 Stop Camera", key="stop_camera")
+            
+            while not stop_button:
+                ret, frame = cap.read()
+                if not ret:
+                    st.error("❌ Failed to capture frame from camera.")
+                    break
+                
+                try:
+                    # Display original frame and histogram
+                    original_image.image(cv.cvtColor(frame, cv.COLOR_BGR2RGB), channels="RGB", use_column_width=True)
+                    original_hist.pyplot(display_histogram(cv.cvtColor(frame, cv.COLOR_BGR2GRAY)))
+                    
+                    # Process frame and display with histogram
+                    processed_frame = process_image(frame, menu, params)
+                    processed_image.image(cv.cvtColor(processed_frame, cv.COLOR_BGR2RGB) if len(processed_frame.shape) > 2 else processed_frame, 
+                                       channels="RGB", use_column_width=True)
+                    processed_hist.pyplot(display_histogram(cv.cvtColor(processed_frame, cv.COLOR_BGR2GRAY) if len(processed_frame.shape) > 2 else processed_frame))
+                    
+                except Exception as e:
+                    st.error(f"An error occurred: {str(e)}")
+                    break
+                
+                if stop_button:
+                    break
+            
+            cap.release()
+    else:
+        st.info("Klik tombol 'Start Camera' untuk memulai kamera.")
 
 # Footer and style
 st.markdown("---")
