@@ -24,6 +24,16 @@ def display_histogram(img):
     ax.set_facecolor('none')
     return fig
 
+class VideoTransformer(cv.VideoWriter_fourcc):
+    def __init__(self, menu, params):
+        self.menu = menu
+        self.params = params
+    
+    def transform(self, frame):
+        img = frame.to_ndarray(format="bgr24")
+        processed_img = process_image(img, self.menu, self.params)
+        return processed_img
+
 def process_image(img, menu, params=None):
     """Unified function to process both uploaded images and camera frames"""
     # jika tidak ada parameter, maka set params menjadi dictionary kosong
@@ -148,22 +158,11 @@ with tab1:
         st.warning("Silahkan upload gambar terlebih dahulu.")
 
 with tab2:
-    
-    class VideoTransformer(VideoTransformerBase):
-        def __init__(self, menu, params):
-            self.menu = menu
-            self.params = params
-    
-        def transform(self, frame):
-            img = frame.to_ndarray(format="bgr24")
-            processed_img = process_image(img, self.menu, self.params)
-            return img
-    
-    start_camera = st.button("📷 Start Camera")
-    if start_camera:
-        webrtc_streamer(key="example", video_transformer_factory=lambda: VideoTransformer(menu, params))
-    else:
-        st.info("Klik tombol 'Start Camera' untuk memulai kamera.")
+        start_camera = st.button("📷 Start Camera")
+        if start_camera:
+            webrtc_streamer(key="example", video_transformer_factory=lambda: VideoTransformer(menu, params))
+        else:
+            st.info("Click the 'Start Camera' button to begin.")
 
 # Footer and style
 st.markdown("---")
