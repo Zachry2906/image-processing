@@ -3,18 +3,22 @@ import numpy as np
 import streamlit as st
 from PIL import Image
 import matplotlib.pyplot as plt
+from io import BytesIO
 from image_processing import convert_to_gray, convert_to_binary, convert_to_negative, convert_to_smooth, detect_edge, change_brightness, equalization, rotate, flip, contrast, sharpness
 
 # untuk display histogram
 def display_histogram(img):
-    # calcHist digunakan untuk menghitung histogram dari gambar
+    # Convert to grayscale if the image is in color
+    if len(img.shape) > 2:
+        img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     hist = cv.calcHist([img], [0], None, [256], [0, 256])
-    fig, ax = plt.subplots(figsize=(8, 4))
+    fig, ax = plt.subplots(figsize=(2, 1))
     ax.plot(hist, color='#4CAF50')
     ax.set_title("Histogram", color='white', fontweight='bold')
     ax.set_xlabel("Pixel Value", color='white')
     ax.set_ylabel("Frequency", color='white')
     ax.tick_params(colors='white')
+    ax.set_ylim([0, 50000])
     fig.patch.set_facecolor('none')
     ax.set_facecolor('none')
     return fig
@@ -44,6 +48,8 @@ def process_image(img, menu, params=None):
         return detect_edge(img_gaussian, params.get('method', 'Canny'))
     elif menu == 'Smoothing':
         return convert_to_smooth(img, params.get('factor', 5))
+    # params.get digunakan untuk mendapatkan nilai dari parameter yang sesuai dengan key yang diberikan
+    # jika key tidak ditemukan, maka nilai default yang diberikan adalah 5
     elif menu == 'Brightness':
         return change_brightness(img, params.get('factor', 1.0))
     elif menu == "Equalization":
@@ -71,8 +77,7 @@ def display_image_with_histogram(img, title, column):
         # cvtColor digunakan untuk mengubah warna gambar ke grayscale jika panjang dari img.shape lebih dari 2
         hist_img = cv.cvtColor(img, cv.COLOR_BGR2GRAY) if len(img.shape) > 2 else img
         fig = display_histogram(hist_img)
-        st.pyplot(fig)
-
+        st.pyplot(fig, clear_figure=True)
 # App setup
 st.set_page_config(page_title="Aplikasi Pengolahan Citra 2")
 st.title("✨ Aplikasi Pengolahan Citra")
@@ -121,7 +126,23 @@ with tab1:
         
         # Process and display modified image and histogram
         processed_img = process_image(img, menu, params)
+        processed_img_rgb = cv.cvtColor(processed_img, cv.COLOR_BGR2RGB)
+        # processed_img_rgb digunakan untuk mengubah warna dari gambar yang sudah diolah ke RGB
         display_image_with_histogram(processed_img, "🎨 Gambar sudah diedit", col2)
+        img_pil = Image.fromarray(processed_img_rgb)
+        # img_pil digunakan untuk mengubah array gambar yang sudah diolah menjadi gambar PIL
+        img_bytes = BytesIO()
+        # img_bytes = BytesIO() digunakan untuk membuat objek BytesIO
+        img_pil.save(img_bytes, format='PNG')
+        # img_pil.save digunakan untuk menyimpan gambar ke dalam BytesIO
+        img_bytes.seek(0)
+        # img_bytes.seek(0) digunakan untuk mengatur posisi pointer ke awal
+        st.download_button(
+            "Download Gambar",
+            data=img_bytes,
+            file_name="edited_image.png",
+            mime="image/png"
+        )
     else:
         st.warning("Silahkan upload gambar terlebih dahulu.")
 
