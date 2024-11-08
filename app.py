@@ -24,15 +24,6 @@ def display_histogram(img):
     ax.set_facecolor('none')
     return fig
 
-class VideoTransformer(cv.VideoWriter_fourcc):
-    def __init__(self, menu, params):
-        self.menu = menu
-        self.params = params
-    
-    def transform(self, frame):
-        img = frame.to_ndarray(format="bgr24")
-        processed_img = process_image(img, self.menu, self.params)
-        return processed_img
 
 def process_image(img, menu, params=None):
     """Unified function to process both uploaded images and camera frames"""
@@ -76,6 +67,17 @@ def process_image(img, menu, params=None):
     elif menu == "Sharpness":
         return sharpness(img, params.get('factor', 1.0))
     return img
+
+
+class VideoTransformer(cv.VideoWriter_fourcc):
+    def __init__(self, menu, params):
+        self.menu = menu
+        self.params = params
+    
+    def transform(self, frame):
+        img = frame.to_ndarray(format="bgr24")
+        processed_img = process_image(img, self.menu, self.params)
+        return processed_img
 
 def display_image_with_histogram(img, title, column):
     with column:
