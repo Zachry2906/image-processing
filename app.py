@@ -8,20 +8,30 @@ from image_processing import convert_to_gray, convert_to_binary, convert_to_nega
 
 # untuk display histogram
 def display_histogram(img):
-    # Convert to grayscale if the image is in color
-    if len(img.shape) > 2:
-        img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    hist = cv.calcHist([img], [0], None, [256], [0, 256])
-    fig, ax = plt.subplots(figsize=(2, 1))
-    ax.plot(hist, color='#4CAF50')
-    ax.set_title("Histogram", color='white', fontweight='bold')
+    # Jika gambar grayscale, ubah ke format tiga channel
+    if len(img.shape) == 2 or img.shape[2] == 1:
+        img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
+    
+    # Hitung histogram untuk setiap channel warna
+    colors = ('b', 'g', 'r')
+    fig, ax = plt.subplots(figsize=(5, 2))
+    
+    for i, color in enumerate(colors):
+        hist = cv.calcHist([img], [i], None, [256], [0, 256])
+        ax.plot(hist, color=color, label=f"{color.upper()} Channel")
+    
+    # Pengaturan tampilan plot
+    ax.set_title("RGB Histogram", color='white', fontweight='bold')
     ax.set_xlabel("Pixel Value", color='white')
     ax.set_ylabel("Frequency", color='white')
     ax.tick_params(colors='white')
     ax.set_ylim([0, 50000])
+    ax.legend()
     fig.patch.set_facecolor('none')
     ax.set_facecolor('none')
+    
     return fig
+
 
 def process_image(img, menu, params=None):
     """Unified function to process both uploaded images and camera frames"""
@@ -69,15 +79,13 @@ def process_image(img, menu, params=None):
 def display_image_with_histogram(img, title, column):
     with column:
         st.markdown(f"### {title}")
-        # Convert to RGB for display if needed
-        # cvtColor digunakan untuk mengubah warna gambar ke RGB jika panjang dari img.shape lebih dari 2
+        # Tampilkan gambar
         display_img = cv.cvtColor(img, cv.COLOR_BGR2RGB) if len(img.shape) > 2 else img
         st.image(display_img, use_column_width=True)
-        # Convert to grayscale for histogram if needed
-        # cvtColor digunakan untuk mengubah warna gambar ke grayscale jika panjang dari img.shape lebih dari 2
-        hist_img = cv.cvtColor(img, cv.COLOR_BGR2GRAY) if len(img.shape) > 2 else img
-        fig = display_histogram(hist_img)
+        # Tampilkan histogram RGB
+        fig = display_histogram(img)
         st.pyplot(fig, clear_figure=True)
+
 # App setup
 st.set_page_config(page_title="Aplikasi Pengolahan Citra 2")
 st.title("✨ Aplikasi Pengolahan Citra")
@@ -94,7 +102,7 @@ params = {}
 if menu == 'Binary':
     params['threshold'] = st.sidebar.slider("Threshold", value=128, min_value=0, max_value=255)
 elif menu == 'Edge Detection':
-    params['method'] = st.sidebar.radio("Pilih Metode Konvolusi", ["Canny", "Sobel", "Robert", "Prewit"])
+    params['method'] = st.sidebar.radio("Pilih Metode Konvolusi", ["Canny", "Sobel", "Robert", "Prewitt"])
 elif menu == 'Smoothing':
     params['factor'] = st.sidebar.slider("Factor", value=5, min_value=1, max_value=19, step=2)
 elif menu == 'Brightness':
@@ -107,6 +115,7 @@ elif menu == "Rotate":
     params['rotate_degree'] = st.sidebar.slider('Degree', min_value=0, max_value=360, value=0, step=1)
 elif menu == "Sharpness":
     params['factor'] = st.sidebar.slider('Factor', min_value=0.1, max_value=3.0, value=1.0, step=0.1)
+
 
 # Tabs
 tab1, tab2 = st.tabs(["📤 Unggah Gambar", "📷 Gunakan Kamera"])
@@ -176,15 +185,15 @@ with tab2:
                     break
                 
                 try:
-                    # Display original frame and histogram
+                    # Display original frame and RGB histogram
                     original_image.image(cv.cvtColor(frame, cv.COLOR_BGR2RGB), channels="RGB", use_column_width=True)
-                    original_hist.pyplot(display_histogram(cv.cvtColor(frame, cv.COLOR_BGR2GRAY)))
+                    original_hist.pyplot(display_histogram(frame))  # Use RGB histogram here
                     
                     # Process frame and display with histogram
                     processed_frame = process_image(frame, menu, params)
                     processed_image.image(cv.cvtColor(processed_frame, cv.COLOR_BGR2RGB) if len(processed_frame.shape) > 2 else processed_frame, 
                                        channels="RGB", use_column_width=True)
-                    processed_hist.pyplot(display_histogram(cv.cvtColor(processed_frame, cv.COLOR_BGR2GRAY) if len(processed_frame.shape) > 2 else processed_frame))
+                    processed_hist.pyplot(display_histogram(processed_frame))  # Use RGB histogram here
                     
                 except Exception as e:
                     st.error(f"An error occurred: {str(e)}")

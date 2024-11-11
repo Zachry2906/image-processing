@@ -55,8 +55,18 @@ def detect_edge(img, method):
         # convolve digunakan untuk melakukan konvolusi pada gambar, yang menerima dua parameter, gambar dan kernel
         horizontal = ndimage.convolve(img, roberts_cross_h)
         # convolve digunakan untuk melakukan konvolusi pada gambar, yang menerima dua parameter, gambar dan kernel
-        return np.sqrt(np.square(horizontal) + np.square(vertical)).astype(np.uint8)
+        
+        #tidak dipakai
+        #return np.sqrt(np.square(horizontal) + np.square(vertical)).astype(np.uint8)
         # sqrt digunakan untuk menghitung akar kuadrat dari array input
+        
+        # Gabungkan tepi horizontal dan vertikal
+        edge_magnitude = np.sqrt(np.square(horizontal) + np.square(vertical))
+
+        # Menormalkan besarnya tepi ke kisaran 0-255
+        edge_magnitude_normalized = np.uint8(255 * (edge_magnitude - np.min(edge_magnitude)) / (np.max(edge_magnitude) - np.min(edge_magnitude)))
+
+        return edge_magnitude_normalized
 
 # Negative
 def convert_to_negative(img):
