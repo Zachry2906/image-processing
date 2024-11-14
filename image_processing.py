@@ -133,13 +133,14 @@ def flip(img, arrow):
 
 # Contrast
 def contrast(img, factor):
-    return np.clip((img - 128) * factor + 128, 0, 255).astype(np.uint8)
-# np.clip digunakan untuk membatasi nilai piksel antara 0 dan 255
-# img - 128 digunakan untuk mengurangi nilai piksel dengan 128
-# factor digunakan untuk mengubah nilai kontras gambar
-# 128 digunakan untuk menambahkan nilai piksel dengan 128
-# astype digunakan untuk mengubah tipe data gambar menjadi unsigned integer 8-bit
-# harus diubah ke unsigned integer 8-bit agar nilai piksel berada di antara 0 dan 255
+    # Menggunakan cv.convertScaleAbs untuk mengubah skala kontras gambar dengan faktor tertentu
+    # alpha (factor) mengontrol seberapa besar perubahan kontras yang diterapkan pada gambar
+    # beta adalah konstanta offset yang digunakan untuk menyesuaikan kecerahan gambar
+    # factor akan meningkatkan atau menurunkan kontras gambar tergantung nilai yang diberikan
+    # cv.convertScaleAbs mengaplikasikan transformasi kontras yang lebih efisien dan konsisten
+    # Pada beta, 128 digunakan untuk menetapkan nilai kecerahan dasar gambar
+    return cv.convertScaleAbs(img, alpha=factor, beta=128 * (1 - factor))
+
 
 # Sharpness
 def sharpness(img, factor):
