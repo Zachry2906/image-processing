@@ -110,9 +110,19 @@ def change_brightness(img, factor):
 
 # Equalization
 def equalization(img):
-    return cv.equalizeHist(img)
-# equalizeHist digunakan untuk menyeimbangkan histogram gambar dengan metode equalization
-# equalizeHist menerima satu parameter, gambar yang akan diubah histogramnya
+    # Jika gambar berwarna (BGR), lakukan equalization pada masing-masing channel
+    if len(img.shape) > 2:
+        # Pisahkan channel B, G, R
+        b, g, r = cv.split(img)
+        # Equalization untuk setiap channel
+        b_eq = cv.equalizeHist(b)
+        g_eq = cv.equalizeHist(g)
+        r_eq = cv.equalizeHist(r)
+        # Gabungkan kembali channel yang telah di-equalize
+        return cv.merge((b_eq, g_eq, r_eq))
+    else:
+        # Jika gambar grayscale, langsung equalize
+        return cv.equalizeHist(img)
 
 # Rotate
 def rotate(img, angle):
