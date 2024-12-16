@@ -64,8 +64,7 @@ def process_image(img, menu, params=None):
         return change_brightness(img, params.get('factor', 1.0))
     elif menu == "Equalization":
         # equalization digunakan untuk menyeimbangkan histogram gambar
-        # cvtColor digunakan untuk mengubah warna gambar ke grayscale jika panjang dari img.shape lebih dari 2
-        return equalization(cv.cvtColor(img, cv.COLOR_BGR2GRAY) if len(img.shape) > 2 else img)
+        return equalization(img)
     elif menu == "Rotate":
         return rotate(img, params.get('rotate_degree', 0))
     elif menu == "Flip":
